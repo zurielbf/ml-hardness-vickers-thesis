@@ -2,6 +2,7 @@ absl-py==2.3.1
 astunparse==1.6.3
 certifi==2025.8.3
 charset-normalizer==3.4.3
+deap==1.4.3
 dotenv==0.9.9
 filelock==3.18.0
 flatbuffers==25.2.10
