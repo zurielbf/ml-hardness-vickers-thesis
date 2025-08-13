@@ -70,6 +70,7 @@ def eval_model(
         tf.keras.layers.Input(shape=(norm_train_data.shape[1],)),
         tf.keras.layers.Dense(num_units, activation='relu'),
         tf.keras.layers.Dropout(dropout_rate),
+        tf.keras.layers.Dense(num_units // 2, activation='relu'),
         tf.keras.layers.Dense(1)
     ])
     model.compile(
@@ -80,7 +81,7 @@ def eval_model(
         norm_train_data, 
         norm_train_target, 
         epochs=100, 
-        verbose=2,
+        verbose=0,
         validation_data=(norm_val_data, norm_val_target),
     )
     val_loss = model.evaluate(norm_val_data, norm_val_target, verbose=0)
@@ -109,18 +110,19 @@ algorithms.eaSimple(population, toolbox, cxpb=0.5, mutpb=0.2, ngen=20, verbose=T
 
 ## SELECT BEST INDS
 best_ind = tools.selBest(population, k=1)[0]
-num_units = int(best_ind[0])
-dropout_rate = best_ind[1]
-learning_rate = best_ind[2]
+best_ind_num_units = int(best_ind[0])
+best_ind_dropout_rate = best_ind[1]
+best_ind_learning_rate = best_ind[2]
 
 # 2. Rebuild and train the model with best hyperparameters
 best_model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(norm_train_data.shape[1],)),
-    tf.keras.layers.Dense(num_units, activation='relu'),
-    tf.keras.layers.Dropout(dropout_rate),
+    tf.keras.layers.Dense(best_ind_num_units, activation='relu'),
+    tf.keras.layers.Dropout(best_ind_dropout_rate),
+    tf.keras.layers.Dense(best_ind_num_units // 2, activation='relu'),
     tf.keras.layers.Dense(1)
 ])
-best_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), loss='mae')
+best_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=best_ind_learning_rate), loss='mae')
 best_model.fit(
     norm_train_data, 
     norm_train_target, 
