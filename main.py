@@ -59,9 +59,9 @@ norm_test_target = normalize_with_params(test_y, y_min, y_max)
 
 def eval_model(individual):
     # individual = [num_units, dropout_rate, learning_rate]
-    num_units = max(4, min(32, int(individual[0])))
+    num_units = max(2, min(16, int(individual[0])))
     dropout_rate = min(max(individual[1], 0.0), 0.5)
-    learning_rate = min(max(individual[2], 1e-4), 1e-2)
+    learning_rate = min(max(individual[2], 1e-4), 1e-3)
 
     # Build and train model
     model = tf.keras.Sequential(
@@ -69,7 +69,6 @@ def eval_model(individual):
             tf.keras.layers.Input(shape=(norm_train_data.shape[1],)),
             tf.keras.layers.Dense(num_units, activation="relu"),
             tf.keras.layers.Dropout(dropout_rate),
-            tf.keras.layers.Dense(num_units // 2, activation="relu"),
             tf.keras.layers.Dense(1),
         ]
     )
@@ -92,9 +91,9 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
 
 
 toolbox = base.Toolbox()
-toolbox.register("num_units", random.randint, 16, 128)
+toolbox.register("num_units", random.randint, 2, 16)
 toolbox.register("dropout_rate", random.uniform, 0.0, 0.5)
-toolbox.register("learning_rate", random.uniform, 1e-4, 1e-2)
+toolbox.register("learning_rate", random.uniform, 1e-4, 1e-3)
 toolbox.register(
     "individual",
     tools.initCycle,
@@ -131,12 +130,18 @@ best_model = tf.keras.Sequential(
 best_model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=best_ind_learning_rate), loss="mse"
 )
+
+# callback = tf.keras.callbacks.EarlyStopping(
+#     monitor="val_loss", patience=5, restore_best_weights=True
+# )
+
 # best_model.fit(
 #     norm_train_data,
 #     norm_train_target,
 #     epochs=100,
 #     verbose=2,
 #     validation_data=(norm_val_data, norm_val_target),
+#     callbacks=[callback],
 # )
 
 # 3. Save the trained model
